@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAttachmentRequest;
 use App\Models\Attachment;
-use Illuminate\Database\Eloquent\Model;
 
 class AttachmentController extends Controller
 {
@@ -15,23 +14,21 @@ class AttachmentController extends Controller
 
     public function store(StoreAttachmentRequest $request)
     {
-
-
-        $result = $this->csvToJson($request->attachment);
-        $array = json_decode($result, true);
+        $array = $this->csvToArray($request->attachment);
 
         $arrAveragePrice = array_column($array, 'average_price');
         $slice = array_slice($arrAveragePrice, 0, count($arrAveragePrice));
         $avgPrice = round(array_sum($slice) / sizeof($slice));
         $totalSold = array_sum(array_column($array, 'houses_sold'));
         $avgPriceYear = [];
+        $crimes = 0;
+
         foreach ($array as $item) {
             $date = new \DateTime($item['date']);
             $date = $date->format('Y');
-            if ($date == '2011') {
-                if ($item['no_of_crimes'] != null) {
-                    $crimes = !empty($crimes) ? $crimes + $item['no_of_crimes'] : $item['no_of_crimes'];
-                }
+
+            if ($date == '2011' && !empty($item['no_of_crimes'])) {
+                $crimes =+ $item['no_of_crimes'];
             }
 
             if (!empty($avgPriceYear[$date])) {
@@ -60,7 +57,7 @@ class AttachmentController extends Controller
 
     }
 
-    function csvToJson($fname)
+    function csvToArray($fname)
     {
         // open csv file
         if (!($fp = fopen($fname, 'r'))) {
@@ -71,15 +68,14 @@ class AttachmentController extends Controller
         $key = fgetcsv($fp, "1024", ",");
 
         // parse csv rows into array
-        $json = array();
+        $array = [];
+
         while ($row = fgetcsv($fp, "1024", ",")) {
-            $json[] = array_combine($key, $row);
+            $array[] = array_combine($key, $row);
         }
 
-        // release file handle
         fclose($fp);
 
-        // encode array to json
-        return json_encode($json);
+        return $array;
     }
 }

@@ -50,19 +50,14 @@ export default {
             const formData = new FormData()
             formData.append('attachment', this.attachment)
             formData.append('saveDB', this.saveDB)
-            console.log(formData);
+
             axios.post('/', formData, config)
                 .then(response => this.result = response.data)
                 .catch(error => console.log(error))
-            console.log(this.result.avgPriceYear)
         },
 
         onAttachmentChange(e) {
             this.attachment = e.target.files[0];
-            // const file = e.target.files[0];
-            // const reader = new FileReader();
-            // reader.onload = e => console.log(e.target.result);
-            // reader.readAsBinaryString(file);
         },
     },
     watch: {}
